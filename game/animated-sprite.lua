@@ -8,6 +8,7 @@
     http://opensource.org/licenses/MIT
 ]]
 print("AnimatedSprite.lua loaded")
+local sti = require "sti"
 
 local ManagerVersion = 1.0
 
@@ -131,44 +132,58 @@ function DrawInstance (spr, x, y) --Updated to handle Physics
         actor = spr.name
     
 	love.graphics.draw (
-		image_bank[spr.sprite.sprite_sheet], --The image
-		--Current frame of the current animation
-		spr.sprite.animations[spr.curr_anim][spr.curr_frame],
-                spr.sprite.x,
-                spr.sprite.y,
-                spr.sprite.rotation,
-                spr.sprite.flip_h,
-                spr.sprite.flip_v,
-                spr.sprite.offset,
-                0
+		image_bank[spr.sprite.image],
+		spriteLayer.sprite.frame,
+    spriteLayer.sprite.x,
+    spriteLayer.sprite.y
 	)
 
 end
 
 
+function createSpriteLayer(map, hero, world) --Recieves map object in main.lua
 
-function doPlayer(player, dt)
-   
-    player.sprite.dirY = player.sprite.dirY + gravity -- Gravity Constantly pulling down
-    player.sprite.dirX = 0 -- Make sure they dont get crazy fast
-    
-    if player.sprite.dirY > maxFallSpeed then
-        player.sprite.dirY = maxFallSpeed
-    end
-    
-    if love.keyboard.isDown('left') then
-        moveSprite(player,'left', dt)
-        player.sprite.dirX =  player.sprite.dirX + (player.sprite.speed*dt)
-        player.sprite.x = player.sprite.x - player.sprite.dirX
-    elseif love.keyboard.isDown('right') then
-        moveSprite(player, 'right', dt)
-        player.sprite.dirX = player.sprite.dirX + (player.sprite.speed*dt)
-        player.sprite.x = player.sprite.x + player.sprite.dirX
-    else
-        moveSprite(player, nil, dt)
-    end
-    
+  map:addCustomLayer("SpriteLayer", 4)
+  
+    local spriteLayer = map.layers["SpriteLayer"] -- Global spriteLayer
+  
+  spriteLayer.sprite = {
+    image = hero.sprite.sprite_sheet,
+    frame = hero.sprite.animations[hero.curr_anim][hero.curr_frame], --Can also try giving curr. frame
+    x = hero.sprite.x,
+    y = hero.sprite.y
+  }
+  
+  --Create Physical Bodies
+    spriteLayer.sprite.body = love.physics.newBody(world, spriteLayer.sprite.x/2, spriteLayer.sprite.y/2, "dynamic")
+    spriteLayer.sprite.shape = love.physics.newRectangleShape(72, 97)
+    spriteLayer.sprite.fixture = love.physics.newFixture(spriteLayer.sprite.body, spriteLayer.sprite.shape)
+  
+    return spriteLayer
 end
+
+function movePlayer(hero, dt)
+
+  local sprite = map.layers["SpriteLayer"].sprite
+  local down = love.keyboard.isDown
+
+  local x, y = 0, 0
+
+  if down("right") then 
+     x = x + 4000 
+     moveSprite(hero, "right", dt)
+     elseif down("left") then
+     x = x - 4000
+     moveSprite(hero, "left", dt) 
+     else
+     moveSprite(hero, nil, dt)
+     x = 0
+  end
+  sprite.body:applyForce(x, y)
+  sprite.x, sprite.y = sprite.body:getWorldCenter()
+
+end
+
 
 function moveSprite(hero, key, dt)
    
