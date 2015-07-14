@@ -107,7 +107,7 @@ function GetInstance (sprite_def)
 	}
 end
 
-function UpdateInstance(spr, dt)
+function UpdateInstance(spr, dt) --Handles Sprite Instances
 	--Increment the internal counter.
 	spr.elapsed_time = spr.elapsed_time + dt
 
@@ -127,15 +127,30 @@ function UpdateInstance(spr, dt)
 	end
 end
 
-function DrawInstance (spr, x, y) --Updated to handle Physics
 
-        actor = spr.name
+function updateSpriteLayer(spr) --Update image specific information regarding sprite to display animations
+
+  spriteLayer.sprite.frame = spr.sprite.animations[spr.curr_anim][spr.curr_frame]
+  spriteLayer.sprite.flip_h = spr.flip_h
+  spriteLayer.sprite.flip_v = spr.flip_v
+
+end
+
+function DrawInstance (spr) --Updated to handle Physics
+
+  local image = spr.sprite.image
+  local x,y = math.floor(spr.sprite.x), math.floor(spr.sprite.y)
     
 	love.graphics.draw (
-		image_bank[spr.sprite.image],
-		spriteLayer.sprite.frame,
-    spriteLayer.sprite.x,
-    spriteLayer.sprite.y
+		image_bank[spr.sprite.image], --Holds path to image
+		spr.sprite.frame,
+    x,
+    y,
+    0,
+    spr.sprite.flip_h,
+    spr.sprite.flip_v,
+    spr.sprite.width/2,
+    spr.sprite.height/2
 	)
 
 end
@@ -148,16 +163,25 @@ function createSpriteLayer(map, hero, world) --Recieves map object in main.lua
     local spriteLayer = map.layers["SpriteLayer"] -- Global spriteLayer
   
   spriteLayer.sprite = {
-    image = hero.sprite.sprite_sheet,
+    image = hero.sprite.sprite_sheet, --Image referenced for drawing
     frame = hero.sprite.animations[hero.curr_anim][hero.curr_frame], --Can also try giving curr. frame
     x = hero.sprite.x,
-    y = hero.sprite.y
+    y = hero.sprite.y,
+    width = hero.sprite.width,
+    height = hero.sprite.height,
+    flip_h = 0,
+    flip_v = 0
   }
   
   --Create Physical Bodies
     spriteLayer.sprite.body = love.physics.newBody(world, spriteLayer.sprite.x/2, spriteLayer.sprite.y/2, "dynamic")
+    --Create shape from frame height and width
     spriteLayer.sprite.shape = love.physics.newRectangleShape(72, 97)
     spriteLayer.sprite.fixture = love.physics.newFixture(spriteLayer.sprite.body, spriteLayer.sprite.shape)
+      
+    spriteLayer.sprite.body:setLinearDamping(10)
+    spriteLayer.sprite.body:setFixedRotation(true) --We dont need the player flipping around n shit!
+    
   
     return spriteLayer
 end
@@ -166,19 +190,27 @@ function movePlayer(hero, dt)
 
   local sprite = map.layers["SpriteLayer"].sprite
   local down = love.keyboard.isDown
-
+    
   local x, y = 0, 0
+  
+  if down("w") or down("up") then 
+  y = y - 4000  
+  elseif down("a") or down("left")  then 
+  x = x - 4000 
+  hero.curr_anim = hero.sprite.animations_names[2] -- Set Sprite to run must use sprite object not sprite layer object
+  hero.flip_h = -1
+  hero.flip_v = 1 
+  elseif down("d") or down("right") then 
+    hero.curr_anim = hero.sprite.animations_names[2] 
+    hero.flip_h = 1
+    hero.flip_v = 1       
+    x = x + 4000 
+  else
+  hero.curr_anim = hero.sprite.animations_names[1]
+  hero.curr_frame = 1
 
-  if down("right") then 
-     x = x + 4000 
-     moveSprite(hero, "right", dt)
-     elseif down("left") then
-     x = x - 4000
-     moveSprite(hero, "left", dt) 
-     else
-     moveSprite(hero, nil, dt)
-     x = 0
   end
+  
   sprite.body:applyForce(x, y)
   sprite.x, sprite.y = sprite.body:getWorldCenter()
 
@@ -205,4 +237,3 @@ function moveSprite(hero, key, dt)
     end
 
 end
-

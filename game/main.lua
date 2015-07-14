@@ -7,27 +7,33 @@ local x, y = 0,0
 
 
 function love.load(arg) 
-    
+
+  background = love.graphics.newImage("/assets/bg.png")    
   map = sti.new("/maps/map01")
   startCollision(map)
   hero = GetInstance('sprites/hero.lua')
-  background = love.graphics.newImage("/assets/bg.png")
+
   spriteLayer = createSpriteLayer(map, hero, world)
 
 
 end
+
 function love.update(dt)
     world:update(dt)
     map:update(dt)
     movePlayer(hero, dt)
     UpdateInstance(hero, dt)
+    updateSpriteLayer(hero, dt)
 
 end
 
 function love.draw(dt)
     love.graphics.draw(background, 0, 0)
-    map:drawWorldCollision(collision)
-    DrawInstance(spriteLayer, spriteLayer.sprite.x, spriteLayer.sprite.y  )
+    map:draw()
+    DrawInstance(spriteLayer) --Change to draw spritelayer sprites
+    
+    
+    love.graphics.polygon("line", spriteLayer.sprite.body:getWorldPoints(spriteLayer.sprite.shape:getPoints()))
 
 
 
