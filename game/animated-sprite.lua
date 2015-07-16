@@ -149,8 +149,8 @@ function DrawInstance (spr) --Updated to handle Physics
     0,
     spr.sprite.flip_h,
     spr.sprite.flip_v,
-    spr.sprite.width/2,
-    spr.sprite.height/2
+    spr.sprite.width/2, -- Horizontal Offset to draw Sprite in center of body
+    spr.sprite.height/2 --Vertical Offset
 	)
 
 end
@@ -179,9 +179,10 @@ function createSpriteLayer(map, hero, world) --Recieves map object in main.lua
     spriteLayer.sprite.shape = love.physics.newRectangleShape(72, 97)
     spriteLayer.sprite.fixture = love.physics.newFixture(spriteLayer.sprite.body, spriteLayer.sprite.shape)
       
-    spriteLayer.sprite.body:setLinearDamping(10)
+      --Give properties to the player body
+    spriteLayer.sprite.body:setLinearDamping(.005)
     spriteLayer.sprite.body:setFixedRotation(true) --We dont need the player flipping around n shit!
-    
+        
   
     return spriteLayer
 end
@@ -194,9 +195,10 @@ function movePlayer(hero, dt)
   local x, y = 0, 0
   
   if down("w") or down("up") then 
-  y = y - 4000  
+  y = y - 8000  
+  --sprite.body:setLinearVelocity(0,0)
   elseif down("a") or down("left")  then 
-  x = x - 4000 
+  x = x - 2000
   hero.curr_anim = hero.sprite.animations_names[2] -- Set Sprite to run must use sprite object not sprite layer object
   hero.flip_h = -1
   hero.flip_v = 1 
@@ -204,11 +206,14 @@ function movePlayer(hero, dt)
     hero.curr_anim = hero.sprite.animations_names[2] 
     hero.flip_h = 1
     hero.flip_v = 1       
-    x = x + 4000 
+    x = x + 2000
   else
   hero.curr_anim = hero.sprite.animations_names[1]
   hero.curr_frame = 1
-
+  --spriteLayer.sprite.body:setLinearVelocity(0,0) --Playing around w/ Linear Velocity to fix movement
+ -- spriteLayer.sprite.body:setInertia(0)
+  x = 0
+  y = 0
   end
   
   sprite.body:applyForce(x, y)
@@ -216,24 +221,3 @@ function movePlayer(hero, dt)
 
 end
 
-
-function moveSprite(hero, key, dt)
-   
-    if key == 'right' then
-        hero.sprite.flip_h = 1 -- Flip 180 
-        hero.sprite.offset = 0
-        hero.curr_anim = hero.sprite.animations_names[2]        
-    elseif key == 'left' then
-        hero.sprite.flip_h = -1 -- Flip 180
-        hero.sprite.flip_v = 1
-        hero.sprite.offset = 46
-        hero.curr_anim = hero.sprite.animations_names[2]        
-    elseif key == 'up' then
-     
-    else
-        hero.curr_anim = hero.sprite.animations_names[1]
-        hero.curr_frame = 1
-        
-    end
-
-end

@@ -7,7 +7,7 @@ return {
   height = 8,
   tilewidth = 70,
   tileheight = 70,
-  nextobjectid = 1,
+  nextobjectid = 4,
   properties = {},
   tilesets = {
     {
@@ -61,10 +61,10 @@ return {
       y = 0,
       width = 8,
       height = 8,
-      visible = false,
+      visible = true,
       opacity = 1,
       properties = {
-        ["Ladder"] = ""
+        ["Ladder"] = "true"
       },
       encoding = "lua",
       data = {
@@ -101,6 +101,14 @@ return {
         0, 0, 0, 0, 0, 0, 4, 4,
         0, 0, 0, 0, 0, 0, 4, 4
       }
+    },
+    {
+      type = "objectgroup",
+      name = "Object Layer 1",
+      visible = false,
+      opacity = 1,
+      properties = {},
+      objects = {}
     }
   }
 }

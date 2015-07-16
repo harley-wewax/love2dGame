@@ -1,6 +1,7 @@
 require 'player'
 require 'animated-sprite'
 require 'collision'
+require 'camera'
 local sti = require "sti"
 
 local x, y = 0,0
@@ -29,17 +30,20 @@ end
 
 function love.draw(dt)
     love.graphics.draw(background, 0, 0)
-    map:draw()
-    DrawInstance(spriteLayer) --Change to draw spritelayer sprites
-    
-    
-    love.graphics.polygon("line", spriteLayer.sprite.body:getWorldPoints(spriteLayer.sprite.shape:getPoints()))
-
-
-
-    --Track mouse and Player position
     getMouse()
-    love.graphics.print("Player Position: (" ..spriteLayer.sprite.x .. "," .. spriteLayer.sprite.y .. ")", 50,70)
+    love.graphics.print("Player Position: (" ..spriteLayer.sprite.x .. " , " .. spriteLayer.sprite.y .. ")", 50,70) 
+        --Keep Player Centered
+    local tx = math.floor(-spriteLayer.sprite.x + love.graphics.getWidth() / 2 - 16)
+    local ty = math.floor(-spriteLayer.sprite.y + love.graphics.getHeight() / 2 - 16)
+    love.graphics.translate(tx, ty)
+    --Setup Map Draw Range then Draw Map
+    map:setDrawRange(tx, ty, love.graphics.getWidth(), love.graphics.getHeight())
+    map:draw()
+    map:drawWorldCollision(collision)
+    DrawInstance(spriteLayer) --Change to draw spritelayer sprites    
+    
+    --Track Player and Mouse Position   
+    love.graphics.polygon("line", spriteLayer.sprite.body:getWorldPoints(spriteLayer.sprite.shape:getPoints()))
 end
 
 function getMouse()
@@ -47,3 +51,7 @@ function getMouse()
  y = love.mouse.getY()
      love.graphics.print("Mouse Position: (" ..x.. "," ..y..")", 50,50)
 end
+
+
+
+
